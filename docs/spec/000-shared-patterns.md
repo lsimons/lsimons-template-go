@@ -31,16 +31,33 @@ Standard template for new specification documents:
 
 ## Test Function Template
 
-Standard test structure:
+Standard test structure (stdlib `testing`, table-driven):
 
-```python
-def test_feature_basic():
-    """Test basic functionality works correctly."""
-    # Test happy path
-    # Verify expected outputs
+```go
+func TestFeature(t *testing.T) {
+    t.Parallel()
 
-def test_feature_edge_cases():
-    """Test edge cases and error handling."""
-    # Test boundary conditions
-    # Test error scenarios
+    tests := []struct {
+        name    string
+        input   string
+        want    string
+        wantErr bool
+    }{
+        {name: "happy path", input: "x", want: "X"},
+        {name: "empty input", input: "", wantErr: true},
+    }
+
+    for _, tc := range tests {
+        t.Run(tc.name, func(t *testing.T) {
+            t.Parallel()
+            got, err := Feature(tc.input)
+            if (err != nil) != tc.wantErr {
+                t.Fatalf("Feature(%q) error = %v, wantErr %v", tc.input, err, tc.wantErr)
+            }
+            if got != tc.want {
+                t.Errorf("Feature(%q) = %q, want %q", tc.input, got, tc.want)
+            }
+        })
+    }
+}
 ```

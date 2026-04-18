@@ -8,21 +8,35 @@ Brief project description.
 ## Quick Reference
 
 <!-- Update these commands for your project -->
-- **Setup**: `uv venv && uv pip install -e .`
-- **Test**: `uv run pytest`
-- **Lint**: `uv run ruff check . && uv run basedpyright`
-- **Format**: `uv run ruff format .`
+- **Build**: `go build ./...`
+- **Test**: `go test -race -cover ./...`
+- **Lint**: `golangci-lint run`
+- **Format**: `gofumpt -w .`
+- **Tidy**: `go mod tidy`
+
+One-time tool install:
+
+```bash
+go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+go install mvdan.cc/gofumpt@latest
+```
 
 ## Structure
 
-<!-- Document your project structure here -->
+<!-- Document your project structure here. Minimal default:
+- main.go at repo root
+- internal/<feature>/ for private packages (feature-oriented, not layer-oriented)
+- Add cmd/<binary>/ only when you have more than one binary
+-->
 
 ## Guidelines
 
 **Code quality:**
-- Full type annotations (basedpyright: 0 errors)
-- Tests for all functionality
-- ruff for linting and formatting
+- `go vet ./...` and `golangci-lint run` must report zero issues
+- Code must be `gofumpt`-formatted and `goimports`-clean
+- Tests for all functionality; prefer the stdlib `testing` package
+- Use `t.Context()`, `t.Setenv`, `t.Chdir`, and `testing/synctest` where they fit
+- `go mod tidy -diff` must be clean before committing
 
 ## Commit Message Convention
 
@@ -38,8 +52,11 @@ Work is NOT complete until `git push` succeeds.
 
 1. **Quality gates** (if code changed):
    ```bash
-   uv run pytest
-   uv run ruff check . && uv run basedpyright
+   go build ./...
+   go test -race -cover ./...
+   go vet ./...
+   golangci-lint run
+   go mod tidy -diff
    ```
 
 2. **Push**:

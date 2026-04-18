@@ -1,30 +1,32 @@
-# lsimons-template
+# lsimons-template-go
 
-Project template for Python CLI tools with standardized tooling.
+Project template for Go CLI tools with standardized tooling.
 
 ## Using This Template
 
 1. Copy this repository to create a new project
 2. Replace placeholders throughout:
    - `$project` - project name (e.g., `myproject`)
-   - `$project_pkg` - Python package name with underscores (e.g., `my_project`)
    - `$shortDescription` - one-line description
 
-3. Rename/create your package directory under `src/` or root
-4. Update `pyproject.toml`:
-   - Change `name` and `description`
-   - Update `[project.scripts]` if creating a CLI
-   - Update `[tool.setuptools.packages.find]` include pattern
-   - Update `[tool.pytest.ini_options]` coverage target
+3. Update `go.mod`:
+   - Replace `$project` in the module path with your project name (the
+     template will not build until this is done — that is intentional)
+   - Bump the `go` and `toolchain` directives if needed
 
-5. Update `AGENTS.md` (and `CLAUDE.md` symlink) with project-specific instructions
+4. Replace `main.go` with your CLI entrypoint. Add private packages under
+   `internal/<feature>/` as the project grows. Only introduce `cmd/<binary>/`
+   when you have more than one binary.
+
+5. Update `AGENTS.md` (and `CLAUDE.md` symlink) with project-specific
+   instructions.
 
 ## Included Configuration
 
-- **Python 3.14+** required
-- **ruff** for linting and formatting (line-length: 100)
-- **basedpyright** strict mode for type checking
-- **pytest** with 80% coverage requirement
+- **Go 1.26+** required (toolchain pinned in `go.mod`)
+- **golangci-lint v2** for linting (`.golangci.yml`)
+- **gofumpt + goimports** for formatting (enforced via golangci-lint)
+- **`go test -race -cover`** for tests and coverage
 - **GitHub Actions CI** on push/PR to main
 
 ## Project Structure
@@ -33,29 +35,40 @@ Project template for Python CLI tools with standardized tooling.
 lsimons-$project/
 ├── .github/workflows/ci.yml  # CI pipeline
 ├── docs/spec/                # Feature specifications
-├── src/                      # Source code (or use root package)
-├── tests/                    # Test files
+├── internal/                 # Private packages (add as needed)
+├── main.go                   # CLI entrypoint
+├── main_test.go              # Placeholder test
+├── .golangci.yml             # Linter configuration
 ├── AGENTS.md                 # AI agent instructions
 ├── CLAUDE.md -> AGENTS.md    # Claude Code compatibility
-├── pyproject.toml            # Project configuration
+├── go.mod                    # Module definition
 └── README.md
 ```
 
 ## Development Commands
 
 ```bash
-# Setup
-uv venv && uv sync --all-groups
+# Build
+go build ./...
 
-# Run tests
-uv run pytest
+# Run tests (race detector + coverage)
+go test -race -cover ./...
 
-# Lint and format
-uv run ruff check .
-uv run ruff format .
+# Lint
+golangci-lint run
 
-# Type check
-uv run basedpyright
+# Format
+gofumpt -w .
+
+# Keep go.mod tidy
+go mod tidy
+```
+
+Install `golangci-lint` and `gofumpt` once:
+
+```bash
+go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+go install mvdan.cc/gofumpt@latest
 ```
 
 ## License
