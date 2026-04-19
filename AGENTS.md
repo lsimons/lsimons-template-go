@@ -8,18 +8,12 @@ Brief project description.
 ## Quick Reference
 
 <!-- Update these commands for your project -->
-- **Build**: `go build ./...`
-- **Test**: `go test -race -cover ./...`
-- **Lint**: `golangci-lint run`
-- **Format**: `gofumpt -w .`
-- **Tidy**: `go mod tidy`
-
-One-time tool install:
-
-```bash
-go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
-go install mvdan.cc/gofumpt@latest
-```
+- **One-time setup**: `mise install` (installs Go, golangci-lint, gofumpt)
+- **Build**: `mise run build` (or `go build ./...`)
+- **Test**: `mise run test` (or `go test -race -cover ./...`)
+- **Lint**: `mise run lint` (runs golangci-lint + gofmt check + go vet + tidy check)
+- **Format**: `mise run format` (or `gofumpt -w .`)
+- **Full CI gate**: `mise run ci`
 
 ## Structure
 
@@ -52,11 +46,7 @@ Work is NOT complete until `git push` succeeds.
 
 1. **Quality gates** (if code changed):
    ```bash
-   go build ./...
-   go test -race -cover ./...
-   go vet ./...
-   golangci-lint run
-   go mod tidy -diff
+   mise run ci
    ```
 
 2. **Push**:
