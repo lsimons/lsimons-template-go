@@ -4,46 +4,46 @@ Project template for Go CLI tools with standardized tooling.
 
 ## Using This Template
 
-1. Copy this repository to create a new project
-2. Replace placeholders throughout:
-   - `$project` - project name (e.g., `myproject`)
-   - `$shortDescription` - one-line description
+1. Click **Use this template** on GitHub (or clone this repo).
+2. Clone your new repo locally and run:
 
-3. Update `go.mod`:
-   - Replace `$project` in the module path with your project name (the
-     template will not build until this is done — that is intentional)
-   - Bump the `go` and `toolchain` directives if needed
+   ```bash
+   mise install          # pin + install go + golangci-lint + gofumpt
+   mise run init         # rename `template` → your project name
+   mise run build        # confirm it compiles
+   ```
 
-4. Replace `main.go` with your CLI entrypoint. Add private packages under
-   `internal/<feature>/` as the project grows. Only introduce `cmd/<binary>/`
-   when you have more than one binary.
+   `mise run init` auto-detects your project name from the git remote
+   (or directory name), stripping `lsimons-` / `-go` suffixes. Pass
+   `--name foo` to override. See `scripts/init.py` for details.
 
-5. Update `AGENTS.md` (and `CLAUDE.md` symlink) with project-specific
+3. Update `AGENTS.md` (and `CLAUDE.md` symlink) with project-specific
    instructions.
+4. Replace `main.go` placeholder with your CLI entrypoint. Add private
+   packages under `internal/<feature>/` as the project grows. Only
+   introduce `cmd/<binary>/` when you have more than one binary.
 
 ## Included Configuration
 
-- **Go 1.26+** required (toolchain pinned in `go.mod`)
+- **Go 1.26+** required (toolchain pinned in `go.mod` + `.mise.toml`)
 - **golangci-lint v2** for linting (`.golangci.yml`)
 - **gofumpt + goimports** for formatting (enforced via golangci-lint)
 - **`go test -race -cover`** for tests and coverage
 - **GitHub Actions CI** on push/PR to main, with actions pinned to
   full-length commit SHAs (the repo setting *Require actions to be
   pinned to a full-length commit SHA* is enabled)
-
-> **Note:** CI is red on this template repo itself — the `$project`
-> placeholder in `go.mod` makes the module path malformed on purpose.
-> Once you fork and do the search/replace described above, CI turns
-> green.
+- **`.mise.toml`** pins toolchain + defines every repo task
 
 ## Project Structure
 
 ```
-lsimons-$project/
-├── .github/workflows/ci.yml  # CI pipeline
+lsimons-template-go/
+├── .github/workflows/ci.yml  # CI pipeline (mise-action)
+├── .mise.toml                # Toolchain pin + task runner
 ├── docs/spec/                # Feature specifications
 ├── internal/                 # Private packages (add as needed)
-├── main.go                   # CLI entrypoint
+├── scripts/init.py           # Rename-to-your-project helper
+├── main.go                   # CLI entrypoint (placeholder)
 ├── main_test.go              # Placeholder test
 ├── .golangci.yml             # Linter configuration
 ├── AGENTS.md                 # AI agent instructions
@@ -55,27 +55,12 @@ lsimons-$project/
 ## Development Commands
 
 ```bash
-# Build
-go build ./...
-
-# Run tests (race detector + coverage)
-go test -race -cover ./...
-
-# Lint
-golangci-lint run
-
-# Format
-gofumpt -w .
-
-# Keep go.mod tidy
-go mod tidy
-```
-
-Install `golangci-lint` and `gofumpt` once:
-
-```bash
-go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
-go install mvdan.cc/gofumpt@latest
+mise install          # one-time: pin + install toolchain
+mise run build        # go build ./...
+mise run test         # go test -race -cover ./...
+mise run lint         # golangci-lint + gofmt + vet + mod tidy check
+mise run format       # gofumpt -w .
+mise run ci           # full CI gate
 ```
 
 ## License

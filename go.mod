@@ -1,4 +1,4 @@
-module github.com/lsimons/lsimons-$project
+module github.com/lsimons/lsimons-template
 
 go 1.26
 

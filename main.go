@@ -1,4 +1,4 @@
-// Command $project is a placeholder entrypoint. Replace with real CLI logic.
+// Command template is a placeholder entrypoint. Replace with real CLI logic.
 package main
 
 import (
@@ -15,6 +15,6 @@ func main() {
 
 func run(args []string) error {
 	_ = args
-	fmt.Println("hello from lsimons-$project")
+	fmt.Println("hello from lsimons-template")
 	return nil
 }
