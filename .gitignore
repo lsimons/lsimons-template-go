@@ -50,3 +50,6 @@ vendor/
 .Spotlight-V100
 .Trashes
 ehthumbs.db
+
+# Claude local settings
+.claude/settings.local.json
