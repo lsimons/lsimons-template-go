@@ -10,8 +10,14 @@ on:
 permissions:
   contents: read
 
+# Supersede in-flight runs for the same branch/PR; never cancel main.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   lint-and-test:
+    name: Lint, build and test
     runs-on: ubuntu-latest
 
     steps:
@@ -26,17 +32,49 @@ jobs:
           install: true
           cache: true
 
+      - name: Cache Go build and module caches
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+
+      - name: Install
+        run: mise run install
+
       - name: Lint
         run: mise run lint
 
       - name: Build
         run: mise run build
 
+      # `mise run test` enforces and prints the coverage floor itself.
       - name: Test
         run: mise run test
 
-      - name: Show coverage summary
-        run: go tool cover -func=coverage.out | tail -n 1
+  vulncheck:
+    name: Govulncheck (Go dependency audit)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up mise
+        uses: jdx/mise-action@7e36c90d9ab29c415a2384db3006f3ec8a8cc654 # v4.2.4
+        with:
+          install: true
+          cache: true
+
+      # Queries https://vuln.go.dev, so it is its own job rather than
+      # part of the offline `mise run ci` gate.
+      - name: Audit Go dependencies (govulncheck)
+        run: mise run vulncheck
 
   zizmor:
     name: Zizmor (GitHub Actions audit)
@@ -52,3 +90,11 @@ jobs:
         uses: zizmorcore/zizmor-action@3dc1ecc9bcb9e94e9b2c709687979e1298497054 # v0.6.2
         with:
           advanced-security: false
+          # The action's own defaults are version "latest" and
+          # collect "default". Pin the version so a zizmor release cannot
+          # turn CI red on its own, and set collect: all so
+          # .github/dependabot.yml is audited too. Both must match
+          # `mise run audit` for that task to be a real local mirror —
+          # bump them together.
+          version: "1.29.0"
+          collect: all
