@@ -1,0 +1,30 @@
+# https://editorconfig.org/
+# Keeps editors that are not running gofumpt in line with what is
+# actually committed in this tree.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# gofmt/gofumpt indent with tabs and will rewrite anything else.
+[*.go]
+indent_style = tab
+
+# The Go toolchain writes go.mod/go.sum with tabs.
+[{go.mod,go.sum}]
+indent_style = tab
+
+# TOML is deliberately not listed here: `.mise.toml` is committed with
+# 4-space indentation, so the [*] default is the one that matches the
+# tree.
+[*.{yml,yaml,json,md}]
+indent_size = 2
+
+[*.md]
+# Two trailing spaces are a hard line break in Markdown.
+trim_trailing_whitespace = false
