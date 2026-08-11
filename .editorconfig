@@ -3,6 +3,8 @@
 # actually committed in this tree.
 root = true
 
+# The 4-space default is for `scripts/init.py`; Go, TOML, YAML, JSON and
+# Markdown all override it below.
 [*]
 charset = utf-8
 end_of_line = lf
@@ -19,10 +21,11 @@ indent_style = tab
 [{go.mod,go.sum}]
 indent_style = tab
 
-# TOML is deliberately not listed here: `.mise.toml` is committed with
-# 4-space indentation, so the [*] default is the one that matches the
-# tree.
-[*.{yml,yaml,json,md}]
+# TOML is listed here on purpose: `mise fmt` owns `.mise.toml` and emits
+# 2-space indents, so the [*] default of 4 would have editors and
+# `mise fmt` reindenting the file back and forth. Verified against the
+# committed file, not assumed.
+[*.{yml,yaml,json,toml,md}]
 indent_size = 2
 
 [*.md]
