@@ -15,6 +15,6 @@ func main() {
 
 func run(args []string) error {
 	_ = args
-	fmt.Println("hello from lsimons-template")
+	fmt.Println("hello from lsimons-template-go")
 	return nil
 }

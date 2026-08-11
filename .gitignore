@@ -7,7 +7,7 @@
 bin/
 dist/
 # default CLI output from `go build ./...` on *nix (matches module name)
-/lsimons-template
+/lsimons-template-go
 # After `mise run init` replaces the placeholder, keep the module-named
 # binary out of git by renaming this line to /<your-project>.
 
@@ -25,6 +25,9 @@ go.work.sum
 # Vendored dependencies (opt-in only)
 vendor/
 
+# go.sum is the lock file: it is committed and must never be ignored.
+# It is listed here as a reminder, not as a pattern.
+
 # Go build/test cache
 .cache/
 
@@ -35,6 +38,11 @@ vendor/
 # Environment
 .env
 .env.*
+
+# mise local overrides (the committed .mise.toml is the shared config)
+.mise.local.toml
+mise.local.toml
+.mise/
 
 # IDEs and editors
 .vscode/
@@ -51,5 +59,8 @@ vendor/
 .Trashes
 ehthumbs.db
 
-# Claude local settings
+# Claude
+# `.claude/` itself is tracked on purpose — settings.json is shared
+# config. Only per-user state and scratch worktrees are ignored.
 .claude/settings.local.json
+.claude/worktrees
