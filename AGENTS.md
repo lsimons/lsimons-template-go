@@ -18,8 +18,7 @@ Every repo task lives in `.mise.toml`; `mise tasks` lists them.
 | `mise install`       | Install the pinned toolchain                                      |
 | `mise run init`      | Rename the `template` placeholder to the project name             |
 | `mise run install`   | `go mod download`                                                 |
-| `mise run lint`      | `golangci-lint` + `gofmt` check + `go vet` + tidy check + `actionlint` |
-| `mise run fmt-check` | `gofmt -l .` only; `lint` depends on it                            |
+| `mise run lint`      | `golangci-lint` (incl. `gofumpt`) + `go vet` + tidy + `actionlint` |
 | `mise run format`    | `gofumpt -w .`                                                    |
 | `mise run test`      | `go test -race` with a coverage floor                             |
 | `mise run build`     | `go build ./...`                                                  |
@@ -38,7 +37,7 @@ are separate; CI runs each as its own job.
 .github/dependabot.yml    Weekly gomod + github-actions updates, 7-day cooldown
 .mise.toml                Pinned toolchain + every repo task
 .golangci.yml             golangci-lint v2 configuration
-go.mod                    Module path, language floor, exact toolchain pin
+go.mod                    Module path, language floor, minimum toolchain
 main.go                   Placeholder CLI entrypoint
 main_test.go              Placeholder test
 scripts/init.py           Rename-to-your-project helper (`mise run init`)
@@ -55,7 +54,9 @@ Layout conventions as the project grows: private packages under
 
 - `go vet ./...` and `golangci-lint run` must report zero issues.
 - Code must be `gofumpt`-formatted and `goimports`-clean; do not
-  hand-format around them.
+  hand-format around them. `golangci-lint run` reports formatter diffs
+  as issues, so `mise run lint` already covers this — there is no
+  separate `gofmt` check, and none is needed.
 - Tests for all functionality; prefer the stdlib `testing` package.
 - Use `t.Context()`, `t.Setenv`, `t.Chdir`, and `testing/synctest` where
   they fit.
@@ -70,14 +71,17 @@ Layout conventions as the project grows: private packages under
 **Supply chain:**
 
 - `go.sum` is committed and must stay in the tree.
-- GitHub Actions are pinned to full-length commit SHAs with a `# vX.Y.Z`
-  comment, and `zizmor` enforces that in CI.
+- GitHub Actions are pinned to full-length commit SHAs, and `zizmor`
+  enforces the hash pin in CI. The trailing `# vX.Y.Z` comment is
+  convention only — nothing validates that it matches the SHA, so read
+  it as a hint and check the SHA when it matters.
 - Every tool in `.mise.toml` is pinned to an exact version, go included.
   Nothing there is covered by dependabot, so refresh it deliberately
   with `mise up` and read the diff.
-- `go.mod`'s `toolchain` directive and `.mise.toml`'s `go` entry are the
-  same pin written twice; bump them together. The `go` directive in
-  `go.mod` is the language floor and is a minor version on purpose.
+- `.mise.toml`'s `go` entry is the only exact toolchain pin. `go.mod`'s
+  `toolchain` directive is a *minimum* — a newer local go is used as
+  found — and its `go` directive is the language floor. Keep `toolchain`
+  equal to `.mise.toml`'s `go` and bump them together.
 - `mise run vulncheck` before shipping a dependency bump.
 
 ## Commit Message Convention

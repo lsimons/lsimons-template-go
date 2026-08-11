@@ -28,16 +28,28 @@ Project template for Go CLI tools with standardized tooling.
 5. Raise the coverage floor in `.mise.toml`'s `test` task once there is
    real code to cover. It ships at 50%, which is what the placeholder
    measures.
-6. Run `/setup` in your agent of choice. Repository settings — issue
-   labels, private vulnerability reporting, Dependabot security updates
-   — are GitHub state rather than files, so `Use this template` does not
-   copy them and nothing in this repo can create them. `/setup`
-   configures them against the new repo directly.
+6. Check `go.mod`'s module path matches your repo. `mise run init`
+   rebuilds it as `github.com/lsimons/lsimons-<name>-go`; if your repo
+   is named anything else, fix the path by hand or `go get` will fail.
+7. Configure the repository settings. These are GitHub state rather
+   than files, so `Use this template` does not copy them and nothing in
+   this repo can create them:
+
+   ```bash
+   REPO=<owner>/<repo>
+   gh api --method PUT "repos/$REPO/private-vulnerability-reporting"
+   gh api --method PUT "repos/$REPO/vulnerability-alerts"        # must precede the next line
+   gh api --method PUT "repos/$REPO/automated-security-fixes"
+   ```
+
+   Also enable *Require actions to be pinned to a full-length commit
+   SHA* under Settings → Actions, and add whatever issue labels your
+   triage process uses.
 
 ## Included Configuration
 
-- **Go 1.26** language floor, with the exact toolchain pinned in both
-  `go.mod` (`toolchain`) and `.mise.toml`
+- **Go 1.26** language floor; `go.mod`'s `toolchain` sets a *minimum*
+  and `.mise.toml`'s `go` entry is the exact version mise installs
 - **golangci-lint v2** for linting (`.golangci.yml`)
 - **gofumpt + goimports** for formatting (enforced via golangci-lint)
 - **`go test -race`** with an enforced coverage floor
@@ -92,8 +104,7 @@ mise install          # one-time: pin + install toolchain
 mise run install      # go mod download
 mise run build        # go build ./...
 mise run test         # go test -race, with the coverage floor
-mise run lint         # golangci-lint + gofmt + vet + tidy check + actionlint
-mise run fmt-check    # gofmt -l . only (lint depends on it)
+mise run lint         # golangci-lint (incl. gofumpt) + vet + tidy + actionlint
 mise run format       # gofumpt -w .
 mise run ci           # full CI gate (offline)
 mise run vulncheck    # govulncheck against the Go vulnerability database
