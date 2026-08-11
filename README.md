@@ -84,7 +84,6 @@ lsimons-template-go/
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
 ├── LICENSE                   # Apache-2.0
-├── SECURITY.md               # Vulnerability reporting route
 ├── go.mod                    # Module definition
 └── README.md
 ```
@@ -121,6 +120,5 @@ See [LICENSE](./LICENSE).
 See [CONTRIBUTING.md](./CONTRIBUTING.md). AI agents see
 [AGENTS.md](./AGENTS.md).
 
-## Security
-
-See [SECURITY.md](./SECURITY.md).
+To report a vulnerability, use the "Report a vulnerability" button under
+this repository's Security tab rather than opening a public issue.
