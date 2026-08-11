@@ -1,5 +1,8 @@
 version: 2
 updates:
+  # "gomod" is the ecosystem that reads go.mod and go.sum. It covers
+  # module requirements only — the tool versions in .mise.toml are not
+  # a dependabot ecosystem and have to be refreshed with `mise up`.
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
