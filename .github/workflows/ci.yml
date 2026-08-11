@@ -19,6 +19,8 @@ jobs:
   lint-and-test:
     name: Lint, build and test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
@@ -38,7 +40,11 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          # go.mod is hashed as well as go.sum because this repo starts
+          # with no go.sum: on go.sum alone hashFiles returns the empty
+          # string, making `key` byte-identical to `restore-keys`, so
+          # actions/cache would save once and then hit exactly forever.
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum', '**/go.mod') }}
           restore-keys: ${{ runner.os }}-go-
 
       - name: Install
@@ -90,11 +96,14 @@ jobs:
         uses: zizmorcore/zizmor-action@3dc1ecc9bcb9e94e9b2c709687979e1298497054 # v0.6.2
         with:
           advanced-security: false
-          # The action's own defaults are version "latest" and
-          # collect "default". Pin the version so a zizmor release cannot
-          # turn CI red on its own, and set collect: all so
-          # .github/dependabot.yml is audited too. Both must match
-          # `mise run audit` for that task to be a real local mirror —
-          # bump them together.
+          # The action defaults to version "latest". Pin it so a zizmor
+          # release cannot turn CI red on its own, and keep it equal to
+          # the `zizmor` entry in .mise.toml — bump them together.
+          #
+          # `collect` is left at its default deliberately. The default
+          # already collects .github/dependabot.yml (verified: zizmor
+          # 1.29.0 with no --collect flag reports "completed
+          # ./.github/dependabot.yml"). `all` differs only in that it
+          # ignores .gitignore, which would drag vendored or downloaded
+          # workflows into the audit.
           version: "1.29.0"
-          collect: all
