@@ -6,34 +6,79 @@
 > `mise run init` once to rename the placeholder module to your
 > project name. See `scripts/init.py` for details.
 
-Brief project description.
+Project template for Go CLI tools with standardized tooling.
+See [README.md](README.md) for the user-facing description.
 
 ## Quick Reference
 
-<!-- Update these commands for your project -->
-- **One-time setup**: `mise install` (installs Go, golangci-lint, gofumpt)
-- **Build**: `mise run build` (or `go build ./...`)
-- **Test**: `mise run test` (or `go test -race -cover ./...`)
-- **Lint**: `mise run lint` (runs golangci-lint + gofmt check + go vet + tidy check)
-- **Format**: `mise run format` (or `gofumpt -w .`)
-- **Full CI gate**: `mise run ci`
+Every repo task lives in `.mise.toml`; `mise tasks` lists them.
+
+| Task                 | What it does                                                     |
+| -------------------- | ---------------------------------------------------------------- |
+| `mise install`       | Install the pinned toolchain                                      |
+| `mise run init`      | Rename the `template` placeholder to the project name             |
+| `mise run install`   | `go mod download`                                                 |
+| `mise run lint`      | `golangci-lint` + `gofmt` check + `go vet` + tidy check + `actionlint` |
+| `mise run fmt-check` | `gofmt -l .` only; `lint` depends on it                            |
+| `mise run format`    | `gofumpt -w .`                                                    |
+| `mise run test`      | `go test -race` with a coverage floor                             |
+| `mise run build`     | `go build ./...`                                                  |
+| `mise run ci`        | Full gate: lint + test + build                                    |
+| `mise run vulncheck` | `govulncheck` against the Go vulnerability database               |
+| `mise run audit`     | `vulncheck` + `zizmor` over workflows and dependabot config       |
+| `mise run ci-watch`  | Watch GitHub Actions for the current branch                       |
+
+`ci` is offline. `vulncheck` and `audit` need network access, so they
+are separate; CI runs each as its own job.
 
 ## Structure
 
-<!-- Document your project structure here. Minimal default:
-- main.go at repo root
-- internal/<feature>/ for private packages (feature-oriented, not layer-oriented)
-- Add cmd/<binary>/ only when you have more than one binary
--->
+```
+.github/workflows/ci.yml  CI: mise run lint/build/test + govulncheck + zizmor
+.github/dependabot.yml    Weekly gomod + github-actions updates, 7-day cooldown
+.mise.toml                Pinned toolchain + every repo task
+.golangci.yml             golangci-lint v2 configuration
+go.mod                    Module path, language floor, exact toolchain pin
+main.go                   Placeholder CLI entrypoint
+main_test.go              Placeholder test
+scripts/init.py           Rename-to-your-project helper (`mise run init`)
+docs/spec/                Feature specifications
+```
+
+Layout conventions as the project grows: private packages under
+`internal/<feature>/`, feature-oriented rather than layer-oriented. Add
+`cmd/<binary>/` only once there is more than one binary.
 
 ## Guidelines
 
 **Code quality:**
-- `go vet ./...` and `golangci-lint run` must report zero issues
-- Code must be `gofumpt`-formatted and `goimports`-clean
-- Tests for all functionality; prefer the stdlib `testing` package
-- Use `t.Context()`, `t.Setenv`, `t.Chdir`, and `testing/synctest` where they fit
-- `go mod tidy -diff` must be clean before committing
+
+- `go vet ./...` and `golangci-lint run` must report zero issues.
+- Code must be `gofumpt`-formatted and `goimports`-clean; do not
+  hand-format around them.
+- Tests for all functionality; prefer the stdlib `testing` package.
+- Use `t.Context()`, `t.Setenv`, `t.Chdir`, and `testing/synctest` where
+  they fit.
+- `go mod tidy -diff` must be clean before committing.
+- Do not silence a check without a written justification on the same
+  line — a bare `//nolint` is not acceptable, a narrow
+  `//nolint:gosec // <reason>` is. `nolintlint` enforces that. Prefer
+  fixing the cause; suppress when the cause is outside this repo.
+- Never weaken a control to make a check pass: do not lower the
+  coverage floor, unpin an action or a tool, or delete a failing test.
+
+**Supply chain:**
+
+- `go.sum` is committed and must stay in the tree.
+- GitHub Actions are pinned to full-length commit SHAs with a `# vX.Y.Z`
+  comment, and `zizmor` enforces that in CI.
+- Every tool in `.mise.toml` is pinned to an exact version, go included.
+  Nothing there is covered by dependabot, so refresh it deliberately
+  with `mise up` and read the diff.
+- `go.mod`'s `toolchain` directive and `.mise.toml`'s `go` entry are the
+  same pin written twice; bump them together. The `go` directive in
+  `go.mod` is the language floor and is a minor version on purpose.
+- `mise run vulncheck` before shipping a dependency bump.
 
 ## Commit Message Convention
 
