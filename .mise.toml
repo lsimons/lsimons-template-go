@@ -14,6 +14,17 @@
 minimum_release_age = "7d"
 lockfile = true
 
+# mise.lock records a checksum per tool *per platform*, and only for
+# platforms someone has actually run `mise install` on. It currently
+# covers linux-x64 (what CI runs) and macos-arm64. On any other host —
+# macos-x64, linux-arm64 — mise has no checksum to compare against and
+# installs whatever the download URL returns, unverified.
+#
+# So the "pin everything" rule below is enforced by a checksum on two
+# platforms and by the version string alone everywhere else. To extend
+# the guarantee, run `mise install` on the new platform and commit the
+# added mise.lock entries.
+
 # Every tool is pinned to an exact version, deliberately and without
 # exception — including go. This is a supply-chain rule, not a
 # stability one: an upstream compromise must never be auto-downloaded.
@@ -34,6 +45,13 @@ gofumpt = "0.11.0"
 # the Go module proxy via the `go:` backend, exact-pinned like the rest.
 # It is compiled at install time, which is the one entry here that costs
 # more than a download.
+#
+# It is also the one entry with no checksum in mise.lock: there is no
+# release binary to hash, so mise records only the version and backend.
+# That is not unverified — the Go checksum database and sum.golang.org
+# authenticate the module download — but it is a different mechanism
+# from the per-platform hashes every other tool here gets, and the
+# lockfile does not record its result. Verified by go, not by mise.
 "go:golang.org/x/vuln/cmd/govulncheck" = "1.6.0"
 # Used by `mise run audit`; must match `version:` in the workflow's
 # zizmor job. Bump them together.
