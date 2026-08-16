@@ -55,48 +55,37 @@ Layout conventions as the project grows: private packages under
 
 - `go vet ./...` and `golangci-lint run` must report zero issues.
 - Code must be `gofumpt`-formatted and `goimports`-clean; do not
-  hand-format around them. `golangci-lint run` reports formatter diffs
-  as issues, so `mise run lint` already covers this — there is no
-  separate `gofmt` check, and none is needed.
+  hand-format around them. `mise run lint` covers this.
 - Tests for all functionality; prefer the stdlib `testing` package.
 - Use `t.Context()`, `t.Setenv`, `t.Chdir`, and `testing/synctest` where
   they fit.
-- `go mod tidy -diff` must be clean before committing.
-- Do not silence a check without a written justification on the same
-  line — a bare `//nolint` is not acceptable, a narrow
-  `//nolint:gosec // <reason>` is. `nolintlint` enforces that. Prefer
-  fixing the cause; suppress when the cause is outside this repo.
-- Never weaken a control to make a check pass: do not lower the
-  coverage floor, unpin an action or a tool, or delete a failing test.
+- No bare `//nolint`. Narrow it and name the reason
+  (`//nolint:gosec // <reason>`); `nolintlint` enforces that. Prefer
+  fixing the cause.
+- Never weaken a control to make a check pass: no lowered coverage floor,
+  no unpinned actions or tools, no deleted tests.
 
 **Supply chain:**
 
-- `go.sum` is committed and must stay in the tree. (This repo has no
-  dependencies yet, so there is none to commit — the moment one is added
-  there will be.)
-- CI installs with `install-frozen`, never plain `install`. Go has no
-  `--frozen-lockfile`: `-mod=readonly` is the default but governs
-  `go.mod` only, so `go mod download` and `go build` will both write or
-  extend `go.sum` and exit 0. The frozen task adds `go mod verify` and a
-  `git diff --exit-code` on `go.mod`/`go.sum`, which is what actually
-  makes a stale lock an error.
-- GitHub Actions are pinned to full-length commit SHAs, and `zizmor`
-  enforces the hash pin in CI. The trailing `# vX.Y.Z` comment is
-  convention only — nothing validates that it matches the SHA, so read
-  it as a hint and check the SHA when it matters.
-- Every tool in `.mise.toml` is pinned to an exact version, go included.
-  Nothing there is covered by dependabot, so refresh it deliberately
-  with `mise up` and read the diff.
-- `mise.lock`'s checksums are per platform, and only cover platforms
-  someone has installed on — linux-x64 and macos-arm64 today. Elsewhere
-  the pin is a version string with nothing verifying the bytes. The
-  `go:` govulncheck entry has no mise checksum on any platform; it is
-  authenticated by the Go checksum database instead.
-- `.mise.toml`'s `go` entry is the only exact toolchain pin. `go.mod`'s
-  `toolchain` directive is a *minimum* — a newer local go is used as
-  found — and its `go` directive is the language floor. Keep `toolchain`
-  equal to `.mise.toml`'s `go` and bump them together.
+- `go.sum` is committed and must stay in the tree (there is none yet —
+  this repo has no dependencies).
+- CI installs with `install-frozen`; use plain `mise run install` when
+  deliberately changing dependencies. Go has no `--frozen-lockfile`, so
+  the frozen task adds `go mod verify` plus a `git diff --exit-code` on
+  `go.mod`/`go.sum` — `-mod=readonly` alone does not cover `go.sum`.
+- `go mod tidy -diff` must be clean before committing.
 - `mise run vulncheck` before shipping a dependency bump.
+- Pin GitHub Actions to full-length commit SHAs; `zizmor` enforces the
+  hash. The trailing `# vX.Y.Z` comment is convention only — check the
+  SHA when it matters.
+- Every `.mise.toml` tool is exact-pinned and invisible to dependabot;
+  refresh with `mise up` and read the diff.
+- `mise.lock` checksums only cover platforms someone has installed on
+  (linux-x64 and macos-arm64 today); `govulncheck` has none on any, being
+  authenticated by the Go checksum database. See `.mise.toml`.
+- `.mise.toml`'s `go` entry is the only exact toolchain pin. `go.mod`'s
+  `toolchain` is a minimum and its `go` directive the language floor;
+  keep `toolchain` equal to `.mise.toml` and bump them together.
 
 ## Commit Message Convention
 
@@ -108,30 +97,11 @@ Follow [Conventional Commits](https://conventionalcommits.org/):
 
 ## Session Completion
 
-Work is NOT complete until every change is committed, pushed, and CI passes.
+Work is not complete until every change is committed, pushed, and CI passes.
 
-1. **Quality gates** (if code changed):
-   ```bash
-   mise run ci
-   ```
+1. `mise run ci` (or the tasks that changed)
+2. Commit everything — do not leave the working tree dirty
+3. `git pull --rebase && git push`
+4. `mise run ci-watch`; on failure `gh run view --log-failed`, fix, repeat
 
-2. **Commit**: stage and commit every change from this session. Do not leave the working tree dirty.
-   ```bash
-   git status              # review untracked and unstaged files
-   git add <files>
-   git commit -m "<type>(<scope>): <description>"
-   ```
-
-3. **Push**:
-   ```bash
-   git pull --rebase && git push
-   git status  # must show "up to date with origin"
-   ```
-
-4. **Verify CI**:
-   ```bash
-   mise run ci-watch
-   ```
-   On failure, inspect with `gh run view --log-failed`, fix, commit, push, and re-watch.
-
-Never stop before CI is green. If anything fails, resolve and retry.
+Never stop before CI is green.
