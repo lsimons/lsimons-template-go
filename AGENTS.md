@@ -78,6 +78,11 @@ Layout conventions as the project grows: private packages under
 - Every tool in `.mise.toml` is pinned to an exact version, go included.
   Nothing there is covered by dependabot, so refresh it deliberately
   with `mise up` and read the diff.
+- `mise.lock`'s checksums are per platform, and only cover platforms
+  someone has installed on — linux-x64 and macos-arm64 today. Elsewhere
+  the pin is a version string with nothing verifying the bytes. The
+  `go:` govulncheck entry has no mise checksum on any platform; it is
+  authenticated by the Go checksum database instead.
 - `.mise.toml`'s `go` entry is the only exact toolchain pin. `go.mod`'s
   `toolchain` directive is a *minimum* — a newer local go is used as
   found — and its `go` directive is the language floor. Keep `toolchain`

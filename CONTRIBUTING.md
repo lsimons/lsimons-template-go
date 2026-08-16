@@ -17,6 +17,13 @@ mise run install      # download module dependencies
 mise run ci           # lint + test + build — must pass before you push
 ```
 
+`mise.lock` pins a checksum for every tool, but only for platforms
+someone has installed on: currently linux-x64 and macos-arm64. If you
+work on another platform, `mise install` will fetch the toolchain
+without verifying it against a recorded hash. Commit the `mise.lock`
+entries your install adds — that extends the guarantee to the next
+person on your platform.
+
 Commit messages follow [Conventional Commits](https://conventionalcommits.org/):
 `type(scope): description`.
 
