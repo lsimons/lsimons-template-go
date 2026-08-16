@@ -47,8 +47,11 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum', '**/go.mod') }}
           restore-keys: ${{ runner.os }}-go-
 
+      # The frozen task, not `install`: a go.mod change that go.sum does
+      # not reflect must fail here rather than have the runner quietly
+      # write the missing hashes and carry on.
       - name: Install
-        run: mise run install
+        run: mise run install-frozen
 
       - name: Lint
         run: mise run lint

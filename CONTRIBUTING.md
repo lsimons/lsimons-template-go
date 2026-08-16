@@ -13,7 +13,7 @@ Do not open a public issue for a security problem. Use the "Report a vulnerabili
 ```bash
 mise trust            # once per clone
 mise install          # install the pinned toolchain
-mise run install      # download module dependencies
+mise run install      # download module dependencies (CI uses install-frozen)
 mise run ci           # lint + test + build — must pass before you push
 ```
 

@@ -17,7 +17,8 @@ Every repo task lives in `.mise.toml`; `mise tasks` lists them.
 | -------------------- | ---------------------------------------------------------------- |
 | `mise install`       | Install the pinned toolchain                                      |
 | `mise run init`      | Rename the `template` placeholder to the project name             |
-| `mise run install`   | `go mod download`                                                 |
+| `mise run install`   | `go mod download`; may write go.sum                               |
+| `mise run install-frozen` | `go mod download` + verify + fail on a changed lock          |
 | `mise run lint`      | `golangci-lint` (incl. `gofumpt`) + `go vet` + tidy + `actionlint` |
 | `mise run format`    | `gofumpt -w .`                                                    |
 | `mise run test`      | `go test -race` with a coverage floor                             |
@@ -70,7 +71,15 @@ Layout conventions as the project grows: private packages under
 
 **Supply chain:**
 
-- `go.sum` is committed and must stay in the tree.
+- `go.sum` is committed and must stay in the tree. (This repo has no
+  dependencies yet, so there is none to commit — the moment one is added
+  there will be.)
+- CI installs with `install-frozen`, never plain `install`. Go has no
+  `--frozen-lockfile`: `-mod=readonly` is the default but governs
+  `go.mod` only, so `go mod download` and `go build` will both write or
+  extend `go.sum` and exit 0. The frozen task adds `go mod verify` and a
+  `git diff --exit-code` on `go.mod`/`go.sum`, which is what actually
+  makes a stale lock an error.
 - GitHub Actions are pinned to full-length commit SHAs, and `zizmor`
   enforces the hash pin in CI. The trailing `# vX.Y.Z` comment is
   convention only — nothing validates that it matches the SHA, so read

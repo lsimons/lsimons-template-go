@@ -72,9 +72,37 @@ _.file = { path = ".env", optional = true }
 description = "Apply your project name throughout this repo (see scripts/init.py)"
 run = "python3 scripts/init.py"
 
+# Unfrozen: this is the task you run while deliberately changing
+# dependencies, so it is allowed to write `go.sum`. `install-frozen` is
+# what the gate and CI use.
 [tasks.install]
-description = "go mod download"
+description = "go mod download; may write go.sum"
 run = "go mod download"
+
+# Go has no `--frozen-lockfile` flag, and the obvious candidate does not
+# cover this. `-mod=readonly` is already the default, but it governs
+# `go.mod` only — `go mod download` and `go build` will both still create
+# or extend `go.sum` without complaint. Verified: adding a `require` line
+# by hand and running either command wrote a `go.sum` and exited 0.
+#
+# So the check is explicit. `go mod verify` confirms the downloaded
+# modules match their recorded hashes, and the `git diff --exit-code`
+# after it is what actually makes a stale lock an error: if downloading
+# changed `go.mod` or `go.sum`, the committed pair did not describe the
+# tree that was reviewed. The diff prints before it fails, so CI says
+# what moved rather than only that something did.
+[tasks."install-frozen"]
+description = "go mod download, failing if go.mod or go.sum would change"
+run = """
+set -e
+go mod download
+go mod verify
+if ! git diff --exit-code -- go.mod go.sum; then
+  echo "go.mod/go.sum changed during install — the committed lock is stale." >&2
+  echo "Run \\`mise run install\\`, review the diff, and commit it." >&2
+  exit 1
+fi
+"""
 
 # No separate gofmt check: `.golangci.yml` enables the `gofumpt`
 # formatter, `golangci-lint run` reports formatter diffs as issues, and

@@ -100,7 +100,8 @@ containing the target path.
 ```bash
 mise trust            # once per clone
 mise install          # one-time: pin + install toolchain
-mise run install      # go mod download
+mise run install      # go mod download; may write go.sum
+mise run install-frozen  # frozen install (what CI runs)
 mise run build        # go build ./...
 mise run test         # go test -race, with the coverage floor
 mise run lint         # golangci-lint (incl. gofumpt) + vet + tidy + actionlint
