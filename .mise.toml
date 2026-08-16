@@ -10,6 +10,10 @@
 # pin is the `go` entry under [tools] below, which is what mise actually
 # installs. Keep it equal to go.mod's `toolchain`.
 
+[settings]
+minimum_release_age = "7d"
+lockfile = true
+
 # Every tool is pinned to an exact version, deliberately and without
 # exception — including go. This is a supply-chain rule, not a
 # stability one: an upstream compromise must never be auto-downloaded.
