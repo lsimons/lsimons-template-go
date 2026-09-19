@@ -29,11 +29,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up mise
-<<<<<<< HEAD
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4
-=======
         uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
->>>>>>> 3373876 (ci: upgrade pinned actions to latest stable versions)
         with:
           install: true
           cache: true
@@ -79,11 +75,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up mise
-<<<<<<< HEAD
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4
-=======
         uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
->>>>>>> 3373876 (ci: upgrade pinned actions to latest stable versions)
         with:
           install: true
           cache: true
