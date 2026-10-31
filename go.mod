@@ -12,4 +12,4 @@ go 1.26
 // A *minimum* toolchain, not an exact pin: a newer local go is used as
 // found and never downgraded to this. The exact pin is the `go` entry in
 // .mise.toml, which is what mise installs. Keep the two equal.
-toolchain go1.27.1
+toolchain go1.27.3
