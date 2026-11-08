@@ -25,7 +25,7 @@ Every repo task lives in `.mise.toml`; `mise tasks` lists them.
 | `mise run build`     | `go build ./...`                                                  |
 | `mise run ci`        | Full gate: lint + test + build                                    |
 | `mise run vulncheck` | `govulncheck` against the Go vulnerability database               |
-| `mise run audit`     | `vulncheck` + `zizmor` over workflows and dependabot config       |
+| `mise run audit`     | `vulncheck` + `zizmor` over workflows                             |
 | `mise run ci-watch`  | Watch GitHub Actions for the current branch                       |
 
 `ci` is offline. `vulncheck` and `audit` need network access, so they
@@ -35,10 +35,10 @@ are separate; CI runs each as its own job.
 
 ```
 .github/workflows/ci.yml  CI: mise run lint/build/test + govulncheck + zizmor
-.github/dependabot.yml    Weekly gomod + github-actions updates, 7-day cooldown
 .mise.toml                Pinned toolchain + every repo task
 .golangci.yml             golangci-lint v2 configuration
 go.mod                    Module path, language floor, minimum toolchain
+renovate.json             Renovate: Go module, actions and mise tool updates (shared preset)
 main.go                   Placeholder CLI entrypoint
 main_test.go              Placeholder test
 scripts/init.py           Rename-to-your-project helper (`mise run init`)
@@ -78,8 +78,8 @@ Layout conventions as the project grows: private packages under
 - Pin GitHub Actions to full-length commit SHAs; `zizmor` enforces the
   hash. The trailing `# vX.Y.Z` comment is convention only — check the
   SHA when it matters.
-- Every `.mise.toml` tool is exact-pinned and invisible to dependabot;
-  refresh with `mise up` and read the diff.
+- Every `.mise.toml` tool is exact-pinned. Renovate proposes the bumps
+  (mise tools, Go modules, go.mod `toolchain`, actions); read the diff.
 - `mise.lock` checksums only cover platforms someone has installed on
   (linux-x64 and macos-arm64 today); `govulncheck` has none on any, being
   authenticated by the Go checksum database. See `.mise.toml`.

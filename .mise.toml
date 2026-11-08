@@ -32,12 +32,13 @@ lockfile = true
 # to review than a per-dependency judgement about which upstreams are
 # trustworthy enough to float.
 #
-# The cost is that nothing here is covered by dependabot, so these go
-# stale silently. Refresh them deliberately with `mise up`, and read the
-# diff.
+# Renovate's mise manager proposes bumps for these pins and mise.lock
+# (after its 7-day minimumReleaseAge, matching `minimum_release_age`
+# above), so read the diff of those PRs like any other.
 [tools]
 # The exact toolchain. Keep equal to go.mod's `toolchain` directive,
-# which is only a minimum.
+# which is only a minimum. Renovate bumps both (mise and gomod managers),
+# normally in the same grouped PR; check they still match.
 go = "1.27.3"
 golangci-lint = "2.15.0"
 gofumpt = "0.12.0"
@@ -54,7 +55,8 @@ gofumpt = "0.12.0"
 # lockfile does not record its result. Verified by go, not by mise.
 "go:golang.org/x/vuln/cmd/govulncheck" = "1.9.0"
 # Used by `mise run audit`; must match `version:` in the workflow's
-# zizmor job. Bump them together.
+# zizmor job. Renovate bumps both (mise manager here, github-actions
+# manager there); check that they still match when reviewing its PR.
 zizmor = "1.31.1"
 # Used by `mise run lint`. actionlint shells out to shellcheck for the
 # `run:` blocks in workflows, and silently skips that half if shellcheck
@@ -156,9 +158,8 @@ description = "govulncheck against the Go vulnerability database"
 run = "govulncheck ./..."
 
 # Near-mirror of the CI security jobs: govulncheck over the Go
-# dependencies, and the mise-pinned zizmor over the workflows and the
-# dependabot config. zizmor's default collection already picks up
-# `.github/dependabot.yml` (`--collect=all` differs only in that it
+# dependencies, and the mise-pinned zizmor over the workflows, using
+# zizmor's default collection (`--collect=all` differs only in that it
 # ignores .gitignore, which is the riskier direction — it walks
 # gitignored trees such as vendored or downloaded workflows).
 #
@@ -173,7 +174,7 @@ run = "govulncheck ./..."
 # wins, so a CI or secret-manager environment with no logged-in `gh`
 # still works.
 [tasks.audit]
-description = "govulncheck + zizmor audit of workflows and dependabot config"
+description = "govulncheck + zizmor audit of workflows"
 depends = ["vulncheck"]
 run = """
 set -e

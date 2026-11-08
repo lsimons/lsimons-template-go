@@ -101,12 +101,10 @@ jobs:
           advanced-security: false
           # The action defaults to version "latest". Pin it so a zizmor
           # release cannot turn CI red on its own, and keep it equal to
-          # the `zizmor` entry in .mise.toml — bump them together.
+          # the `zizmor` entry in .mise.toml — Renovate bumps both; check
+          # they still match in its PR.
           #
-          # `collect` is left at its default deliberately. The default
-          # already collects .github/dependabot.yml (verified: zizmor
-          # 1.29.0 with no --collect flag reports "completed
-          # ./.github/dependabot.yml"). `all` differs only in that it
-          # ignores .gitignore, which would drag vendored or downloaded
-          # workflows into the audit.
+          # `collect` is left at its default deliberately. `all` differs
+          # only in that it ignores .gitignore, which would drag vendored
+          # or downloaded workflows into the audit.
           version: "1.31.1"
