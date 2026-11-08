@@ -38,9 +38,13 @@ Project template for Go CLI tools with standardized tooling.
    ```bash
    REPO=<owner>/<repo>
    gh api --method PUT "repos/$REPO/private-vulnerability-reporting"
-   gh api --method PUT "repos/$REPO/vulnerability-alerts"        # must precede the next line
-   gh api --method PUT "repos/$REPO/automated-security-fixes"
+   gh api --method PUT "repos/$REPO/vulnerability-alerts"
    ```
+
+   This turns on Dependabot *alerts*, which Renovate reads. Leave
+   Dependabot security updates off: update PRs come from Renovate, via
+   the inherited `renovate.json` and the `lsimons-renovate` GitHub App,
+   which is already installed on every lsimons/ repo.
 
    Also enable *Require actions to be pinned to a full-length commit
    SHA* under Settings → Actions, and add whatever issue labels your
@@ -59,8 +63,10 @@ Project template for Go CLI tools with standardized tooling.
   full-length commit SHAs, an [actionlint](https://github.com/rhysd/actionlint)
   workflow check and a [zizmor](https://docs.zizmor.sh/) workflow-security
   audit
-- **Dependabot** for `gomod` and `github-actions`, weekly, with a 7-day
-  cooldown
+- **Renovate** (`renovate.json`, extending the shared
+  [lsimons/.github preset](https://github.com/lsimons/.github#renovate))
+  for `gomod`, GitHub Actions and the `.mise.toml` tools, with a 7-day
+  minimum release age
 - **`.mise.toml`** pins every tool to an exact version — go included —
   and defines every repo task
 - **`.editorconfig`** so editors that are not running gofumpt still
@@ -71,7 +77,6 @@ Project template for Go CLI tools with standardized tooling.
 ```
 lsimons-template-go/
 ├── .github/workflows/ci.yml  # CI pipeline (mise-action + govulncheck + zizmor)
-├── .github/dependabot.yml    # Weekly dependency updates
 ├── .editorconfig             # Editor defaults
 ├── .golangci.yml             # Linter configuration
 ├── .mise.toml                # Toolchain pin + task runner
@@ -85,6 +90,7 @@ lsimons-template-go/
 ├── CONTRIBUTING.md
 ├── LICENSE                   # Apache-2.0
 ├── go.mod                    # Module definition
+├── renovate.json             # Dependency updates (shared preset)
 └── README.md
 ```
 
@@ -108,7 +114,7 @@ mise run lint         # golangci-lint (incl. gofumpt) + vet + tidy + actionlint
 mise run format       # gofumpt -w .
 mise run ci           # full CI gate (offline)
 mise run vulncheck    # govulncheck against the Go vulnerability database
-mise run audit        # vulncheck + zizmor over workflows and dependabot config
+mise run audit        # vulncheck + zizmor over workflows
 mise run ci-watch     # watch GitHub Actions for the current branch
 ```
 
